@@ -1,0 +1,13 @@
+{
+    "formID": "1FAIxyz-xyz",
+    "seriesName": "s",
+    "eventName": "8",
+    "roundPrefix": "S8",
+    "form": {
+        "startETID": "123456",
+        "matchupID": "123456",
+        "roundID": "123456",
+        "consentID": "123456"
+    },
+    "midosAPIKey": "abcdef123456"
+}
