@@ -105,13 +105,16 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
             const dateTimeString = parseEtToDateTimeFormat(race.start);
 
             // Format matchup: assume 2 teams, each with 1 member
-            let matchup = 'Unknown matchup';
-            if (race.teams.length === 2) {
+            let matchup = '';
+            if (race.teams && race.teams.length === 2) {
                 const [teamA, teamB] = race.teams;
                 const playerA = teamA?.members?.[0]?.user?.displayName || '???';
                 const playerB = teamB?.members?.[0]?.user?.displayName || '???';
                 matchup = `${playerA}+vs.+${playerB}`;
             }
+
+            if (eventToAdd.overrideMatchUpString.length > 0)
+                matchup = eventToAdd.overrideMatchUpString;
 
             let roundString = race.round;
 
@@ -139,17 +142,17 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
 async function refreshEventRaces() {
     
     for (var i=0; i<= configuredEvents.length; i++) {
-        let event = configuredEvents[i];
+        let eventToAdd = configuredEvents[i];
     
         let eventRaceIds;
-        if (!(`${event.seriesName}/${event.eventName}` in trackedRaceIds))
+        if (!(`${eventToAdd.seriesName}/${eventToAdd.eventName}` in trackedRaceIds))
             eventRaceIds = new Set();
-        else eventRaceIds = new Set(trackedRaceIds[`${event.seriesName}/${event.eventName}`]);
+        else eventRaceIds = new Set(trackedRaceIds[`${eventToAdd.seriesName}/${eventToAdd.eventName}`]);
 
         await addRacesToForm(event, eventRaceIds)
 
         // Save updated state for this event
-        saveTrackedRaceIds(`${event.seriesName}/${event.eventName}`, eventRaceIds);
+        saveTrackedRaceIds(`${eventToAdd.seriesName}/${eventToAdd.eventName}`, eventRaceIds);
 
         await waitMS(2000);
     }
