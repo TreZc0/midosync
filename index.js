@@ -27,7 +27,7 @@ function loadTrackedRaceIds() {
 
 function saveTrackedRaceIds(eventName, eventRaceIds) {
     trackedRaceIds[eventName] = eventRaceIds;
-    const data = JSON.stringify({ trackedRaceIds: trackedRaceIds }, null, 2);
+    const data = JSON.stringify({ trackedRaceIds: Array.from(trackedRaceIds) }, null, 2);
     fs.writeFileSync('state.json', data);
 }
 
@@ -145,6 +145,7 @@ async function refreshEventRaces() {
         let eventToAdd = configuredEvents[i];
     
         let eventRaceIds;
+        console.log(`${eventToAdd.seriesName}/${eventToAdd.eventName}`, trackedRaceIds);
         if (!(`${eventToAdd.seriesName}/${eventToAdd.eventName}` in trackedRaceIds))
             eventRaceIds = new Set();
         else eventRaceIds = new Set(trackedRaceIds[`${eventToAdd.seriesName}/${eventToAdd.eventName}`]);
