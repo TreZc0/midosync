@@ -149,7 +149,7 @@ async function refreshEventRaces() {
             eventRaceIds = new Set();
         else eventRaceIds = new Set(trackedRaceIds[`${eventToAdd.seriesName}/${eventToAdd.eventName}`]);
 
-        await addRacesToForm(event, eventRaceIds)
+        await addRacesToForm(eventToAdd, eventRaceIds)
 
         // Save updated state for this event
         saveTrackedRaceIds(`${eventToAdd.seriesName}/${eventToAdd.eventName}`, eventRaceIds);
