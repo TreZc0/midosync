@@ -141,11 +141,10 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
 // 5) Run periodically (every 10 minutes)
 async function refreshEventRaces() {
     
-    for (var i=0; i<= configuredEvents.length; i++) {
+    for (var i=0; i< configuredEvents.length; i++) {
         let eventToAdd = configuredEvents[i];
     
         let eventRaceIds;
-        console.log(`${eventToAdd.seriesName}/${eventToAdd.eventName}`, trackedRaceIds);
         if (!(`${eventToAdd.seriesName}/${eventToAdd.eventName}` in trackedRaceIds))
             eventRaceIds = new Set();
         else eventRaceIds = new Set(trackedRaceIds[`${eventToAdd.seriesName}/${eventToAdd.eventName}`]);
