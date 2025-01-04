@@ -92,8 +92,11 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
         }
 
         for (const race of seriesData.event.races) {
-            if (eventRaceIds.has(race.id))
+            if (eventRaceIds.has(race.id)) {
+                if (new Date(race.start).getTime() < new Date().getTime())
+                    eventRaceIds.delete(race.id); // remove id if race is over
                 continue; // skip if already tracked
+            }
 
             if (new Date(race.start).getTime() < new Date().getTime()) // skip if race is in the past
                 continue;
