@@ -83,11 +83,11 @@ function parseEtToDateTimeFormat(utcString) {
 }
 
 // 4) Main function: fetch races, convert times, submit each as a new Form response
-async function addRacesToForm(seriesName, eventName, eventRaceIds) {
+async function addRacesToForm(eventToAdd, eventRaceIds) {
     try {
-        const seriesData = await fetchSeries(seriesName, eventName);
+        const seriesData = await fetchSeries(eventToAdd.seriesName, eventToAdd.eventName);
         if (!seriesData) {
-            console.log(`No series found for "${seriesName}/${eventName}".`);
+            console.log(`No series found for "${eventToAdd.seriesName}/${eventToAdd.eventName}".`);
             return;
         }
 
@@ -115,16 +115,16 @@ async function addRacesToForm(seriesName, eventName, eventRaceIds) {
 
             let roundString = race.round;
 
-            if (config.roundPrefix.length > 0)
-                roundString = `${config.roundPrefix.replace(/\s/g,"+")}:+${race.round.replace(/\s/g,"+")}`;
+            if (eventToAdd.roundPrefix.length > 0)
+                roundString = `${eventToAdd.roundPrefix.replace(/\s/g,"+")}:+${race.round.replace(/\s/g,"+")}`;
 
-            let consentString = race.restreamConsent ? "Yes" : "No";
+            let consentString = (race.restreamConsent == "true" || race.restreamConsent == null) ? "Yes" : "No"; // null set for big races
 
             // Unfortunately, the Google Forms API does currently not allow submission of responses through the API, so the only workaround is to use the formResponse endpoint with prefilled form fields
             let submissionLink = `https://docs.google.com/forms/d/e/${formID}/formResponse?&submit=Submit&usp=pp_url&entry.${qStartET}=${dateTimeString}&entry.${qMatchup}=${matchup}&entry.${qRound}=${roundString}&entry.${qRestreamConsent}=${consentString}`;
 
             await axios.get(submissionLink);
-            console.log(`Submitted race ${race.id}: ${matchup} at ${dateTimeString}`);
+            console.log(`Submitted race ${race.id} of ${eventToAdd.seriesName}/${eventToAdd.eventName}: ${matchup} at ${dateTimeString}`);
 
             // Bit of rate limiting
             await waitMS(1000);
@@ -146,7 +146,7 @@ async function refreshEventRaces() {
             eventRaceIds = new Set();
         else eventRaceIds = new Set(trackedRaceIds[`${event.seriesName}/${event.eventName}`]);
 
-        await addRacesToForm(event.seriesName, event.eventName, eventRaceIds)
+        await addRacesToForm(event, eventRaceIds)
 
         // Save updated state for this event
         saveTrackedRaceIds(`${event.seriesName}/${event.eventName}`, eventRaceIds);
