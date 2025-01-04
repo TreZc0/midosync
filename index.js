@@ -26,8 +26,8 @@ function loadTrackedRaceIds() {
 }
 
 function saveTrackedRaceIds(eventName, eventRaceIds) {
-    trackedRaceIds[eventName] = eventRaceIds;
-    const data = JSON.stringify({ trackedRaceIds: Array.from(trackedRaceIds) }, null, 2);
+    trackedRaceIds[eventName] = Array.from(eventRaceIds);
+    const data = JSON.stringify({ trackedRaceIds: trackedRaceIds }, null, 2);
     fs.writeFileSync('state.json', data);
 }
 
