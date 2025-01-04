@@ -1,7 +1,6 @@
 {
     "formID": "1FAIxyz-xyz",
-    "seriesName": "s",
-    "eventName": "8",
+    "events: [{"seriesName": "s", eventName": "8"}, ...]
     "roundPrefix": "S8",
     "form": {
         "startETID": "123456",

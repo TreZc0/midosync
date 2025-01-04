@@ -4,12 +4,13 @@ const axios = require('axios');
 const config = require('./config.json')
 
 const formID = config.formID;
-const seriesName = config.seriesName;
-const eventName = config.eventName
+const configuredEvents = config.events;
 const qStartET = config.form.startETID;
 const qMatchup = config.form.matchupID;
 const qRound = config.form.roundID;
 const qRestreamConsent = config.form.consentID;
+
+let trackedRaceIds = {};
 
 const waitMS = ms => new Promise(res => setTimeout(res, ms));
 
@@ -17,15 +18,16 @@ const waitMS = ms => new Promise(res => setTimeout(res, ms));
 function loadTrackedRaceIds() {
     try {
         const data = fs.readFileSync('state.json', 'utf8');
-        return new Set(JSON.parse(data).trackedRaceIds || []);
+        trackedRaceIds = JSON.parse(data).trackedRaceIds || {};
     } catch (error) {
         console.warn('Could not load state.json, starting fresh...', error.message);
-        return new Set();
+        trackedRaceIds = {};
     }
 }
 
-function saveTrackedRaceIds(trackedRaceIds) {
-    const data = JSON.stringify({ trackedRaceIds: Array.from(trackedRaceIds) }, null, 2);
+function saveTrackedRaceIds(eventName, eventRaceIds) {
+    trackedRaceIds[eventName] = eventRaceIds;
+    const data = JSON.stringify({ trackedRaceIds: trackedRaceIds }, null, 2);
     fs.writeFileSync('state.json', data);
 }
 
@@ -81,7 +83,7 @@ function parseEtToDateTimeFormat(utcString) {
 }
 
 // 4) Main function: fetch races, convert times, submit each as a new Form response
-async function addRacesToForm(seriesName, eventName, trackedRaceIds) {
+async function addRacesToForm(seriesName, eventName, eventRaceIds) {
     try {
         const seriesData = await fetchSeries(seriesName, eventName);
         if (!seriesData) {
@@ -90,14 +92,14 @@ async function addRacesToForm(seriesName, eventName, trackedRaceIds) {
         }
 
         for (const race of seriesData.event.races) {
-            if (trackedRaceIds.has(race.id))
+            if (eventRaceIds.has(race.id))
                 continue; // skip if already tracked
 
             if (new Date(race.start).getTime() < new Date().getTime()) // skip if race is in the past
                 continue;
 
             // Mark it tracked
-            trackedRaceIds.add(race.id);
+            eventRaceIds.add(race.id);
 
             // Convert time
             const dateTimeString = parseEtToDateTimeFormat(race.start);
@@ -125,7 +127,7 @@ async function addRacesToForm(seriesName, eventName, trackedRaceIds) {
             console.log(`Submitted race ${race.id}: ${matchup} at ${dateTimeString}`);
 
             // Bit of rate limiting
-            await waitMS(2000);
+            await waitMS(1000);
         }
 
     } catch (error) {
@@ -135,14 +137,26 @@ async function addRacesToForm(seriesName, eventName, trackedRaceIds) {
 
 // 5) Run periodically (every 10 minutes)
 async function refreshEventRaces() {
-    const trackedRaceIds = loadTrackedRaceIds();
+    
+    for (var i=0; i<= configuredEvents.length; i++) {
+        let event = configuredEvents[i];
+    
+        let eventRaceIds;
+        if (!(`${event.seriesName}/${event.eventName}` in trackedRaceIds))
+            eventRaceIds = new Set();
+        else eventRaceIds = new Set(trackedRaceIds[`${event.seriesName}/${event.eventName}`]);
 
-    await addRacesToForm(seriesName, eventName, trackedRaceIds);
+        await addRacesToForm(event.seriesName, event.eventName, eventRaceIds)
 
-    // Save updated state
-    saveTrackedRaceIds(trackedRaceIds);
+        // Save updated state for this event
+        saveTrackedRaceIds(`${event.seriesName}/${event.eventName}`, eventRaceIds);
+
+        await waitMS(2000);
+    }
 }
 
 // Run on startup, then every 10 minutes
+loadTrackedRaceIds();
 refreshEventRaces();
+
 setInterval(refreshEventRaces, 10 * 60000);
