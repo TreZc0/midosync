@@ -87,8 +87,18 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
     try {
         const seriesData = await fetchSeries(eventToAdd.seriesName, eventToAdd.eventName);
         if (!seriesData) {
-            console.log(`No series found for "${eventToAdd.seriesName}/${eventToAdd.eventName}".`);
+            console.error(`No series found for "${eventToAdd.seriesName}/${eventToAdd.eventName}".`);
             return;
+        }
+
+        if (!("event" in seriesData) || !seriesData.event) {
+           console.error(`no event data found "${eventToAdd.seriesName}/${eventToAdd.eventName}".`);
+           return;
+        }
+        
+        if (!("races" in seriesData.event)) {
+           console.error("no races found");
+           return;
         }
 
         for (const race of seriesData.event.races) {
