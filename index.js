@@ -138,6 +138,9 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
                 roundString = "";
                 matchup = race.round;
             }
+
+            if (Number.isInteger(matchup))
+                matchup = "Qualification Race #" + matchup;
             
             let consentString = (race.restreamConsent == true || race.restreamConsent == null) ? "Yes" : "No"; // null set for big races
 
