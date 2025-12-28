@@ -134,6 +134,11 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
             if (eventToAdd.roundPrefix.length > 0)
                 roundString = `${eventToAdd.roundPrefix.replace(/\s/g,"+")}:+${race.round.replace(/\s/g,"+")}`;
 
+            if (race.teams == null && eventToAdd.overrideMatchUpString.length == 0) {
+                roundString = "";
+                matchup = race.round;
+            }
+            
             let consentString = (race.restreamConsent == true || race.restreamConsent == null) ? "Yes" : "No"; // null set for big races
 
             // Unfortunately, the Google Forms API does currently not allow submission of responses through the API, so the only workaround is to use the formResponse endpoint with prefilled form fields
