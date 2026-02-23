@@ -41,6 +41,7 @@ async function fetchSeries(seriesName, eventName) {
                         id
                         start
                         round
+                        game
                         restreamConsent
                         teams {
                             members {
@@ -138,6 +139,9 @@ async function addRacesToForm(eventToAdd, eventRaceIds) {
                 roundString = "";
                 matchup = race.round;
             }
+
+            if (race.game != null && roundString.length > 0)
+                roundString = `${roundString.replace(/\s/g, "+")}+(G${race.game})`;
 
             if (Number.isInteger(matchup))
                 matchup = "Qualification Race #" + matchup;
